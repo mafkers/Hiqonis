@@ -1,0 +1,9 @@
+[project]
+name = "worker"
+version = "0.1.0"
+description = "Hiqonis Background Workers (Celery/BullMQ task consumers)"
+requires-python = ">=3.12"
+dependencies = [
+    "celery>=5.3.6",
+    "redis>=5.0.3"
+]

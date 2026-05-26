@@ -1,0 +1,10 @@
+[project]
+name = "infrastructure"
+version = "0.1.0"
+description = "Hiqonis Infrastructure Layer (SQLAlchemy database, Redis cache, S3 storage)"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy>=2.0.28",
+    "redis>=5.0.3",
+    "pgvector>=0.2.5"
+]

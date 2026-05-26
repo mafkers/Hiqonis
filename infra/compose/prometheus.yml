@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s      # Default scraping rate for all endpoints
+  evaluation_interval: 15s  # Default alerting evaluation rate
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Scraping configuration rules matching Hiqonis Docker network services
+scrape_configs:
+  # 1. FastAPI Monolith Application Metrics
+  - job_name: 'hiqonis-backend'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/api/v1/metrics' # FastAPI prometheus instrumentation endpoint
+
+  # 2. LiteLLM Unified Proxy Gateway Metrics
+  - job_name: 'litellm-proxy'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['litellm:4000']
+    metrics_path: '/metrics' # LiteLLM native prometheus metrics exporter
+
+  # 3. Redis Cache Metrics
+  - job_name: 'redis-cache'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis:6379'] # Via redis-exporter container
+
+  # 4. PostgreSQL Database Metrics
+  - job_name: 'postgres-db'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['postgres:5432'] # Via pg_exporter container

@@ -1,0 +1,10 @@
+[project]
+name = "hiqonis"
+version = "0.1.0"
+description = "Hiqonis AI Agent CX Platform Monorepo"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv]
+workspace = { members = ["apps/api", "apps/worker", "libs/core", "libs/agents", "libs/integrations", "libs/infrastructure", "libs/common"] }

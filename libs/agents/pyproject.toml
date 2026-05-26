@@ -1,0 +1,8 @@
+[project]
+name = "agents"
+version = "0.1.0"
+description = "Hiqonis AI Agents implementation using Google ADK and LangGraph"
+requires-python = ">=3.12"
+dependencies = [
+    "google-antigravity>=0.1.0"
+]

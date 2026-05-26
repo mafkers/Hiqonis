@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: hiqonis-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hiqonis
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hiqonis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hiqonis-network
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: hiqonis-pgbouncer
+    ports:
+      - "6432:6432"
+    volumes:
+      - ./infra/compose/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./infra/compose/userlist.txt:/etc/pgbouncer/userlist.txt
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hiqonis-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: hiqonis-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hiqonis-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: hiqonis-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hiqonis-network
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: hiqonis-litellm
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./infra/compose/litellm_config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-""}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-""}
+    depends_on:
+      - redis
+    networks:
+      - hiqonis-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+networks:
+  hiqonis-network:
+    name: hiqonis-network
+    driver: bridge
